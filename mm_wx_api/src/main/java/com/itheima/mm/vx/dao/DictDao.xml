@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.mm.vx.dao.DictDao">
+
+    <select id="selectDictCityByName" resultType="Dict" parameterType="String">
+        select id,data_value as title from t_dict where data_value = #{cityName} and data_type=1;
+    </select>
+
+    <!--传入的参数不用-->
+    <select id="selectDictListByFs" resultType="Dict" parameterType="Integer">
+        select id,data_value as title from t_dict
+        <where>
+            <if test="true">
+                and data_type=1
+            </if>
+
+            <if test="fs != null">
+                and data_tag=#{fs};
+            </if>
+        </where>
+    </select>
+</mapper>

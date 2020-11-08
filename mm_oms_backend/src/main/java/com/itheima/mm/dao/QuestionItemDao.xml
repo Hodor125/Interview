@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.mm.dao.QuestionItemDao">
+<!--    private Integer id;-->
+<!--    private String content;-->
+<!--    private String imgUrl;-->
+<!--    private Integer isRight;-->
+<!--    private Integer questionId;-->
+    <insert id="add" parameterType="QuestionItem">
+        insert into t_question_item (content, img_url, is_right, question_id)
+        values (#{content},#{imgUrl},#{isRight},#{questionId})
+    </insert>
+
+    <update id="update" parameterType="QuestionItem">
+        update t_question_item set content=#{content}, img_url=#{imgUrl}, is_right=#{isRight}, question_id=#{questionId}
+        where question_id=#{questionId}
+    </update>
+
+    <!--根据问题id查询所有的选项-->
+    <select id="selectQuestionItemByQuestionId" resultType="QuestionItem" parameterType="Integer">
+        select content,id,img_url as imgUrl, is_right as isRight from t_question_item
+        where question_id=#{id};
+    </select>
+</mapper>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.mm.dao.CatalogDao">
+    <select id="selectTagListByCourseId" resultType="Catalog" parameterType="Integer">
+        select id,name from t_catalog where course_id=#{id} and status=0
+    </select>
+
+    <select id="selectCatalogById" resultType="Catalog" parameterType="Integer">
+        select tco.id as courseId,tco.name as courseName, tca.create_date as createDate,tca.id,tca.name,
+        tca.status,tca.user_id as userId
+        from t_catalog  tca join t_course tco on tca.course_id=tco.id
+        where tca.id=#{id}
+    </select>
+</mapper>

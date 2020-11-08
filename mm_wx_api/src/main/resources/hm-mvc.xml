@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans>
+    <!--扫描包名获得字节码文件的路径-->
+    <component-scan package="com.itheima.mm.vx"></component-scan>
+</beans>

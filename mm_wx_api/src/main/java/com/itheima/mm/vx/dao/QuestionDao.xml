@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.mm.vx.dao.QuestionDao">
+    <!--status=1表示已经审核过的题目-->
+    <select id="selectQuestionListByQueryParams" resultMap="baseMap">
+        select * from (
+        select tq.id,tq.`subject` as title,tq.difficulty as grade,tq.analysis as content,tq.analysis_video as vedio,'' as vedioPoster,
+        if(mq.tag is null,0,1) as isFinished,if(mq.is_favorite=1,1,0) as isFavorite,tq.type,mq.tag as answerTag,
+        tq.catalog_id
+        from t_question tq left join tr_member_question mq
+        on tq.id=mq.question_id and mq.member_id=#{paramsData.memberId} and tq.status=1
+        ) subQuestion
+        where catalog_id=#{paramsData.categoryID}
+    </select>
+
+    <resultMap id="baseMap" type="Question">
+        <id column="id" property="id"/>
+        <collection property="tags" javaType="ArrayList" ofType="Question" column="id"
+                    select="selectTagsByQuesitonId"/>
+        <collection property="selection" javaType="ArrayList" ofType="QuestionItem" column="id"
+                    select="selectQuestionItemsByQuestionId"/>
+    </resultMap>
+
+    <select id="selectTagsByQuesitonId" resultType="Tag" parameterType="Integer">
+        select tg.id,tg.name as title
+        from t_tag tg join tr_question_tag tqt on tg.id=tqt.tag_id join t_question tq on tqt.question_id=tq.id
+        where tq.id=#{id}
+    </select>
+
+    <!--选项编号的处理在pojo类中做了，这里没必要处理-->
+    <select id="selectQuestionItemsByQuestionId" parameterType="Integer" resultType="QuestionItem">
+        select '' as code, id, is_right as isRight, content as title
+        from t_question_item
+        where question_id=#{id}
+    </select>
+
+    <!--保存做题记录-->
+    <insert id="addMemberQuestion">
+        insert into tr_member_question (member_id,question_id,is_favorite,tag,answerResult)
+        values (#{paramsData.memberId},#{paramsData.id},#{paramsData.isFavorite},#{paramsData.answerTag},
+        #{paramsData.answerResult})
+    </insert>
+
+    <!--更新做题记录-->
+    <update id="updateMemberQuestion">
+        update tr_member_question set is_favorite=#{paramsData.isFavorite},tag=#{paramsData.answerTag},
+        answerResult=#{paramsData.answerResult}
+        where member_id=#{paramsData.memberId} and question_id=#{paramsData.id}
+    </update>
+</mapper>

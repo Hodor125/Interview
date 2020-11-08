@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.mm.dao.TagDao">
+    <select id="selectTagsByCourseId" resultType="Tag" parameterType="Integer">
+        select id,name from t_tag where course_id=#{id};
+    </select>
+
+    <delete id="deleteTagByQuestionId">
+        delete from tr_question_tag where question_id=#{id} and status=0
+    </delete>
+
+    <insert id="addQuestionTag">
+        insert into tr_question_tag (question_id, tag_id)
+         values (#{map.questionId},#{map.tagId})
+    </insert>
+
+    <select id="selectTagsByQuestionId" resultType="Tag" parameterType="Integer">
+        select tt.id,tt.name
+        from t_tag tt
+        join tr_question_tag ttqt on tt.id=ttqt.tag_id
+        join t_question tq on tq.id=ttqt.question_id
+        where question_id=#{id}
+    </select>
+</mapper>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.mm.vx.dao.WxMemberDao">
+    <resultMap id="baseMap" type="WxMember">
+        <id column="id" property="id"/>
+        <result column="nick_name" property="nickName"/>
+        <result column="avatar_url" property="avatarUrl"/>
+        <result column="gender" property="gender"/>
+        <result column="city" property="city"/>
+        <result column="province" property="province"/>
+        <result column="country" property="country"/>
+        <result column="language" property="language"/>
+        <result column="open_id" property="openId"/>
+        <result column="union_id" property="unionId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="city_id" property="cityId"/>
+        <result column="course_id" property="courseId"/>
+        <result column="last_category_kind" property="lastCategoryKind"/>
+        <result column="last_category_type" property="lastCategoryType"/>
+        <result column="last_category_id" property="lastCategoryId"/>
+        <result column="last_question_id" property="lastQuestionId"/>
+    </resultMap>
+
+    <select id="selectWxmemberByOpenId" resultMap="baseMap" parameterType="String">
+        select * from t_wx_member where open_id = #{openId}
+    </select>
+
+    <insert id="insertWxmember" parameterType="WxMember">
+        insert into t_wx_member (nick_name,avatar_url,gender,city,province,country,language,open_id,union_id,
+        create_time,city_id,course_id)
+        values (#{nickName},#{avatarUrl},#{gender},#{city},#{province},#{country},#{language},#{openId},#{unionId},
+        #{createTime},#{cityId},#{courseId})
+    </insert>
+
+    <update id="updateCityCourseByOpenId">
+        update t_wx_member set city_id=#{map.cityID},course_id=#{map.subjectID}
+        where open_id=#{map.openId}
+    </update>
+
+    <update id="updateMemberLastRecord">
+        update t_wx_member set last_category_id=#{paramsData.categoryID},last_question_id=#{paramsData.id},
+        last_category_kind=#{paramsData.categoryKind},last_category_type=#{paramsData.categoryType}
+        where id=#{paramsData.memberId}
+    </update>
+
+    <!--根据openId查询用户中心数据-->
+    <select id="selectUserCenter" resultType="java.util.Map" parameterType="String">
+        select m.last_category_type as categoryType,m.last_category_kind as categoryKind,
+        (select count(*) from tr_member_question where member_id=m.id) as answerCount,
+        (select data_value from t_dict where id=m.city_id) as cityName,
+        '' as categoryTitle,
+        m.city_id as cityID,m.last_category_id as categoryID,m.last_question_id as lastQuestionId,m.course_id as subjectId
+        from t_wx_member m
+        where m.open_id=#{openId}
+    </select>
+
+    <select id="selectCategoryTitleByCategory" resultType="java.lang.String">
+        <if test="resultMap.categoryKind == 1">
+            select name as categoryTitle from t_catalog where id=#{resultMap.categoryID}
+        </if>
+        <if test="resultMap.categoryKind == 2">
+            select short_name as title from t_company where id=#{resultMap.categoryID}
+        </if>
+        <if test="resultMap.categoryKind == 3">
+            select name as title from t_industry where id=#{resultMap.categoryID}
+        </if>
+    </select>
+</mapper>

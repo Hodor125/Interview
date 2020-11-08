@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.mm.dao.ReviewLogDao">
+    <select id="selectReviewLogByQuestionId" resultType="ReviewLog" parameterType="Integer">
+        select id,comments,status,question_id as questionId,user_id as userId,create_date as createDate
+        from t_review_log where question_id = #{id} order by id desc limit 0,1
+    </select>
+
+    <insert id="insertReviewLog" parameterType="reviewLog">
+        insert into t_review_log (comments,status,question_id,user_id,create_date)
+        values (#{comments},#{status},#{questionId},#{userId},#{createDate})
+    </insert>
+</mapper>

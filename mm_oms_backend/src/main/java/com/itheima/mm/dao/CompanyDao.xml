@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.mm.dao.CompanyDao">
+    <resultMap id="resultMapForAllList" type="Company">
+        <id column="id" property="id"/>
+        <collection property="industryList" javaType="ArrayList" ofType="Industry" column="id"
+        select="com.itheima.mm.dao.IndustryDao.selectIndustryListByCompanyId"/>
+    </resultMap>
+
+    <select id="findListAll" resultMap="resultMapForAllList">
+        select id,short_name as shortName,city_id as cityId from t_company;
+    </select>
+
+    <update id="updateCompanyCity" parameterType="Company">
+        update t_company set city_id=#{cityId},user_id=#{userId}
+        where id=#{id}
+    </update>
+
+    <delete id="deleteCompanyIndustryByCompanyId" parameterType="Integer">
+        delete from tr_company_industry where company_id=#{id}
+    </delete>
+
+    <insert id="addCompanyIndustry" parameterType="Map">
+        insert into tr_company_industry (company_id, industry_id) values (#{companyId},#{industryId})
+    </insert>
+
+    <!--查询行业方向-->
+    <select id="selectCompanyIndustrysById" parameterType="Integer" resultType="Industry">
+        select * from t_industry
+        where id in (select industry_id from tr_company_industry where company_id=#{id});
+    </select>
+
+    <!--查询行业方向名-->
+    <select id="selectIndustryNamesById" parameterType="Integer" resultType="String">
+        select name from t_industry
+        where id in (select industry_id from tr_company_industry where company_id=#{id});
+    </select>
+
+    <!--查询公司信息映射-->
+    <resultMap id="CompanyIndustrysMapper" type="Company">
+        <id column="id" property="id" />
+        <collection property="industryList" javaType="ArrayList" ofType="Industry" column="id"
+                    select="selectCompanyIndustrysById" />
+        <collection property="industryNameList" javaType="ArrayList" ofType="String" column="id"
+                    select="selectIndustryNamesById" />
+    </resultMap>
+    <!--根据id查询公司信息-->
+    <select id="selectCompanyById" resultMap="CompanyIndustrysMapper" parameterType="Integer">
+        select (select td.data_value from t_dict td where td.id=tc.city_id) as city,
+        tc.id,tc.short_name as shortName from t_company tc where id=#{id}
+    </select>
+</mapper>

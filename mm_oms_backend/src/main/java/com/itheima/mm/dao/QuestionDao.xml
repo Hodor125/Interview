@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.mm.dao.QuestionDao">
+
+    <sql id="select_where_by_page">
+        <where>
+            <if test="queryParams.isClassic != null">
+                and tq.is_classic=#{queryParams.isClassic}
+            </if>
+
+            <if test="queryParams.courseId != null">
+                and tq.course_id=#{queryParams.courseId}
+            </if>
+
+            <if test="queryParams.difficulty != null">
+                and tq.difficulty=#{queryParams.difficulty}
+            </if>
+
+            <if test="queryParams.type != null">
+                and tq.type=#{queryParams.type}
+            </if>
+
+            <if test="queryParams.keyWord != null">
+                and tq.subject like "%"#{queryParams.keyWord}"%"
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectCount" resultType="java.lang.Long" parameterType="QueryPageBean">
+        select count(*) from t_question tq
+        <include refid="select_where_by_page"></include>
+    </select>
+
+    <select id="selectListByPage" resultType="Question" parameterType="QueryPageBean">
+        select (select u.username from t_user u where u.id=tq.user_id) as creator,
+        (select tc.name from t_course tc where tc.id=tq.course_id) as courseName,
+        (select count(*) from tr_member_question tmp where tmp.question_id=tq.id) as useQty,
+        tq.id,tq.create_date as createDate,tq.difficulty,(1000+tq.id) as number,tq.status,tq.`subject`,tq.type
+        from t_question tq
+        <include refid="select_where_by_page"></include>
+        limit #{offset},#{pageSize}
+    </select>
+
+    <insert id="add">
+        insert into t_question (id, subject, type, difficulty, analysis, analysis_video, remark, is_classic,
+        status, review_status, create_date, user_id, company_id, catalog_id, course_id)
+        values (#{id},#{subject},#{type},#{difficulty},#{analysis},#{analysisVideo},#{remark},#{isClassic},#{status},
+        #{reviewStatus},#{createDate},#{userId},#{companyId},#{catalogId},#{courseId})
+        <selectKey keyProperty="id" resultType="Integer" order="AFTER">
+            select last_insert_id()
+        </selectKey>
+    </insert>
+
+    <update id="update">
+        update t_question set id=#{id}, subject=#{subject}, type={#type}, difficulty=#{difficulty}, analysis=#{analysis},
+         analysis_video=#{analysisVideo}, remark=#{remark}, is_classic=#{isClassic}, status=#{status},
+          review_status=#{reviewStatus}, create_date=#{createDate}, user_id=#{userId}, company_id=#{companyId},
+           catalog_id=#{catalogId}, course_id=#{courseId}
+        where id=#{id}
+    </update>
+
+    <!--
+    tq.is_classic=1 and tq.course_id=2 and tq.difficulty=3
+    and tq.status=1 and tq.type=5 and tq.subject like '%Array%';
+    -->
+    <sql id="selectWhereByClassicPage">
+        <where>
+            <if test="queryParams.isClassic != null">
+                and tq.is_classic=#{queryParams.isClassic}
+            </if>
+
+            <if test="queryParams.courseId != null">
+                and tq.course_id=#{queryParams.courseId}
+            </if>
+
+            <if test="queryParams.difficulty != null">
+                and tq.difficulty=#{queryParams.difficulty}
+            </if>
+
+            <if test="queryParams.status != null">
+                and tq.status=#{queryParams.status}
+            </if>
+
+            <if test="queryParams.type != null">
+                and tq.type=#{queryParams.type}
+            </if>
+
+            <if test="queryParams.keyWord != null">
+                and tq.subject like "%"#{queryParams.keyWord}"%"
+            </if>
+        </where>
+    </sql>
+
+    <!--精选题目列表-->
+    <select id="selectClassicListByPage" resultType="Question" parameterType="QueryPageBean">
+        select tc.name as courseName,tq.create_date as createDate,tu.username as creator,tq.difficulty,tq.id,
+        (tq.id + 1000) as number,tq.status,tq.subject,tq.type,
+        (select count(*) from tr_member_question tmq where tmq.question_id=tq.id) as useQty
+        from t_question tq
+        join t_user tu on tq.user_id=tu.id
+        join t_course tc on tq.course_id=tc.id
+        <include refid="selectWhereByClassicPage"></include>
+        limit #{offset},#{pageSize}
+    </select>
+
+    <!--精选题目总数-->
+    <select id="selectClassicCount" resultType="java.lang.Long" parameterType="QueryPageBean">
+        select count(*) from t_question tq
+        <include refid="selectWhereByClassicPage"></include>
+    </select>
+
+    <select id="selectQuestionById" resultType="Question" parameterType="Integer">
+        select id, (id + 1000) as number, subject, type, difficulty, analysis, analysis_video as analysisVideo,
+        remark, status, review_status as reviewStatus,create_date as createDate, user_id as userId,
+        company_id as companyId, catalog_id as catalogId from t_question where id=#{id};
+    </select>
+
+    <!--更新题目的发布状态和审核状态-->
+    <update id="updateStatus">
+        update t_question set status=#{map.status},review_status=#{map.reviewStatus}
+        where id=#{map.id};
+    </update>
+</mapper>
